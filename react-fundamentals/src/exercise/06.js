@@ -4,9 +4,9 @@
 import * as React from 'react'
 
 function UsernameForm({onSubmitUsername}) {
-  const inputRef = React.useRef('')
+  const inputRef = React.useRef()
   const [username, setUsername] = React.useState('')
-  // const [error, setError] = React.useState('')
+  // const [error, setError] = React.useState(null)
 
   const handleChange = (event) => {
     // const isValid = event.target.value === event.target.value.toLowerCase()
