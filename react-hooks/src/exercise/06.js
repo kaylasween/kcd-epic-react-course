@@ -5,34 +5,49 @@ import * as React from 'react'
 import {fetchPokemon, PokemonInfoFallback, PokemonDataView, PokemonForm} from '../pokemon'
 
 function PokemonInfo({pokemonName}) {
-  const [pokemon, setPokemon] = React.useState(null)
-  const [error, setError] = React.useState(null)
+  const [state, setState] = React.useState({
+    pokemon: null,
+    error: null,
+    status: 'idle'
+  })
 
   React.useEffect(() => {
     if(!pokemonName) {
       return
     }
-    setPokemon(null)
-    setError(null)
+    setState({
+      pokemon: null,
+      error: null,
+      status: 'pending'
+    })
+
     fetchPokemon(pokemonName).then(
       pokemon => {
-        setPokemon(pokemon)
+        setState({
+          pokemon,
+          status: 'resolved'
+        })
       }
-    ).catch(err => setError(err))
+    ).catch(err => {
+      setState({
+        error: err,
+        status: 'rejected'
+      })
+    })
   }, [pokemonName])
 
-  if(error) {
+  if(state.error) {
     return (
       <div role="alert">
-        There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+        There was an error: <pre style={{whiteSpace: 'normal'}}>{state.error.message}</pre>
       </div>
     )
   } else if (!pokemonName) {
     return 'Submit a Pokemon!'
-  } else if (!pokemon) {
+  } else if (!state.pokemon) {
     return <PokemonInfoFallback name={pokemonName} />
   } else {
-    return <PokemonDataView pokemon={pokemon} />
+    return <PokemonDataView pokemon={state.pokemon} />
   }
 }
 
