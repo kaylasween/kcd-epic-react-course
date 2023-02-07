@@ -15,6 +15,8 @@ const actionTypes = {
   reset: 'reset',
 }
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 function toggleReducer(state, {type, initialState}) {
   switch (type) {
     case actionTypes.toggle: {
@@ -72,9 +74,13 @@ function useToggle({
   const onIsControlled = controlledOn != null
   const on = onIsControlled ? controlledOn : state.on
 
-  
-  useOnChangeReadOnlyWarning(onChange, onIsControlled, readOnly)
-  useControlledSwitchWarning(controlledOn)
+  if(!isProduction) {
+    //don't have to worry about breaking this rule of hooks since this variable will never change
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useOnChangeReadOnlyWarning(onChange, onIsControlled, readOnly)
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useControlledSwitchWarning(controlledOn)
+  }
 
   const dispatchWithOnChange = (action) => {
     if(!onIsControlled) {
