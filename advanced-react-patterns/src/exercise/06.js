@@ -2,6 +2,7 @@
 // http://localhost:3000/isolated/exercise/06.js
 
 import * as React from 'react'
+import warning from 'warning'
 import {Switch} from '../switch'
 
 const callAll =
@@ -28,16 +29,52 @@ function toggleReducer(state, {type, initialState}) {
   }
 }
 
+function useControlledSwitchWarning(controlPropValue, controlPropName, componentName) {
+  const isControlled = controlPropValue != null
+  const {current: wasControlled} = React.useRef(isControlled)
+  React.useEffect(() => {
+    warning(
+      !(isControlled && !wasControlled), 
+      `Changing to uncontrolled is prohibited!`,
+    )
+    warning(
+      !(!isControlled && wasControlled), 
+      `Changing to controlled is prohibited!`,
+    )
+  }, [wasControlled, isControlled])
+}
+
+function useOnChangeReadOnlyWarning(onChange, isControlled, isReadOnly) {
+  const hasOnChange = Boolean(onChange)
+  React.useEffect(() => {
+    warning(
+      !(!hasOnChange && isControlled && !isReadOnly), 
+      //could change this to where you're passing some of these things to this function to use here but I'm not doing that right now.
+      `An \`on\` prop was provided to useToggle without an \`onChange\` handler. This will render a read-only toggle. If you want it to be mutable, use \`initialOn\`. Otherwise, set either \`onChange\` or \`readOnly\`.`,
+    )
+    warning(
+      !(!isControlled && hasOnChange), 
+      `Changing while uncontrolled is prohibited!`,
+    )
+    
+  }, [hasOnChange, isControlled, isReadOnly])
+}
+
 function useToggle({
   initialOn = false,
   reducer = toggleReducer,
   onChange,
   on: controlledOn,
+  readOnly = false,
 } = {}) {
   const {current: initialState} = React.useRef({on: initialOn})
   const [state, dispatch] = React.useReducer(reducer, initialState)
   const onIsControlled = controlledOn != null
   const on = onIsControlled ? controlledOn : state.on
+
+  
+  useOnChangeReadOnlyWarning(onChange, onIsControlled, readOnly)
+  useControlledSwitchWarning(controlledOn)
 
   const dispatchWithOnChange = (action) => {
     if(!onIsControlled) {
