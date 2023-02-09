@@ -6,6 +6,27 @@ import {useCombobox} from '../use-combobox'
 import {getItems} from '../workerized-filter-cities'
 import {useAsync, useForceRerender} from '../utils'
 
+function propsAreEqual(oldProps, newProps) {
+    // true means do NOT rerender
+  // false means DO rerender
+
+  // these ones are easy if any of these changed, we should re-render
+  if (oldProps.getItemProps !== newProps.getItemProps) return false
+  if (oldProps.item !== newProps.item) return false
+  if (oldProps.index !== newProps.index) return false
+  if (oldProps.selectedItem !== newProps.selectedItem) return false
+
+  // this is trickier. We should only re-render if this list item:
+  // 1. was highlighted before and now it's not
+  // 2. was not highlighted before and now it is
+  if (oldProps.highlightedIndex !== newProps.highlightedIndex) {
+    const wasPrevHighlighted = oldProps.highlightedIndex === oldProps.index
+    const isNowHighlighted = newProps.highlightedIndex === newProps.index
+    return wasPrevHighlighted === isNowHighlighted
+  }
+  return true
+}
+
 function Menu({
   items,
   getMenuProps,
@@ -21,8 +42,8 @@ function Menu({
           getItemProps={getItemProps}
           item={item}
           index={index}
-          selectedItem={selectedItem}
-          highlightedIndex={highlightedIndex}
+          isSelected={selectedItem?.id === item.id}
+          isHighlighted={highlightedIndex === index}
         >
           {item.name}
         </ListItem>
@@ -31,17 +52,16 @@ function Menu({
   )
 }
 // 🐨 Memoize the Menu here using React.memo
+Menu = React.memo(Menu)
 
 function ListItem({
   getItemProps,
   item,
   index,
-  selectedItem,
-  highlightedIndex,
+  isSelected,
+  isHighlighted,
   ...props
 }) {
-  const isSelected = selectedItem?.id === item.id
-  const isHighlighted = highlightedIndex === index
   return (
     <li
       {...getItemProps({
@@ -57,6 +77,8 @@ function ListItem({
   )
 }
 // 🐨 Memoize the ListItem here using React.memo
+// ListItem = React.memo(ListItem, propsAreEqual)
+ListItem = React.memo(ListItem)
 
 function App() {
   const forceRerender = useForceRerender()
