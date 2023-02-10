@@ -2,12 +2,9 @@
 // http://localhost:3000/login-submission
 
 import * as React from 'react'
-// 🐨 you'll need to grab waitForElementToBeRemoved from '@testing-library/react'
 import {render, screen, waitForElementToBeRemoved} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {build, fake} from '@jackfranklin/test-data-bot'
-// 🐨 you'll need to import rest from 'msw' and setupServer from msw/node
-import {rest} from 'msw'
 import {setupServer} from 'msw/node'
 import Login from '../../components/login-submission'
 import {handlers} from 'test/server-handlers'
@@ -38,7 +35,9 @@ test(`logging in displays the user's username`, async () => {
 
   await userEvent.click(screen.getByRole('button', {name: /submit/i}))
 
-  await waitForElementToBeRemoved(() => screen.getByLabelText('loading', {exact: false}))
+  await waitForElementToBeRemoved(() =>
+    screen.getByLabelText('loading', {exact: false}),
+  )
 
   expect(screen.getByText(username)).toBeInTheDocument()
 })
@@ -46,27 +45,43 @@ test(`logging in displays the user's username`, async () => {
 test(`missing password failure displays error message`, async () => {
   render(<Login />)
   const {username} = buildLoginForm()
-  const expectedError = 'password required'
 
   await userEvent.type(screen.getByLabelText(/username/i), username)
 
   await userEvent.click(screen.getByRole('button', {name: /submit/i}))
 
-  await waitForElementToBeRemoved(() => screen.getByLabelText('loading', {exact: false}))
+  await waitForElementToBeRemoved(() =>
+    screen.getByLabelText('loading', {exact: false}),
+  )
 
-  expect(screen.getByText(expectedError)).toBeInTheDocument()
+  expect(screen.getByRole('alert')).toMatchInlineSnapshot(`
+    <div
+      role="alert"
+      style="color: red;"
+    >
+      password required
+    </div>
+  `)
 })
 
 test(`missing username failure displays error message`, async () => {
   render(<Login />)
   const {password} = buildLoginForm()
-  const expectedError = 'username required'
 
   await userEvent.type(screen.getByLabelText(/password/i), password)
 
   await userEvent.click(screen.getByRole('button', {name: /submit/i}))
 
-  await waitForElementToBeRemoved(() => screen.getByLabelText('loading', {exact: false}))
+  await waitForElementToBeRemoved(() =>
+    screen.getByLabelText('loading', {exact: false}),
+  )
 
-  expect(screen.getByText(expectedError)).toBeInTheDocument()
+  expect(screen.getByRole('alert')).toMatchInlineSnapshot(`
+    <div
+      role="alert"
+      style="color: red;"
+    >
+      username required
+    </div>
+  `)
 })
