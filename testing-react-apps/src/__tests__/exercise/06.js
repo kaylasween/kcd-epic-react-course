@@ -3,22 +3,10 @@
 
 import * as React from 'react'
 import {render, screen, act} from '@testing-library/react'
+import { useCurrentPosition } from 'react-use-geolocation'
 import Location from '../../examples/location'
 
-beforeAll(() => {
-  window.navigator.geolocation = {
-    getCurrentPosition: jest.fn()
-  }
-})
-
-function deferred() {
-  let resolve, reject
-  const promise = new Promise((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  return {promise, resolve, reject}
-}
+jest.mock('react-use-geolocation')
 
 test('displays the users current location', async () => {
   const fakePosition = { 
@@ -28,24 +16,20 @@ test('displays the users current location', async () => {
     }
   }
 
-  const {promise, resolve} = deferred()
+  let setReturnValue
+  function useMockCurrentPosition() {
+    const state = React.useState([])
+    setReturnValue = state[1] 
+    return state[0]
+  }
 
-  // 📜 https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
-  window.navigator.geolocation.getCurrentPosition.mockImplementation(
-    callback => {
-      promise.then(() => callback(fakePosition))
-    }
-  )
+  useCurrentPosition.mockImplementation(useMockCurrentPosition)
 
   render(<Location />)
   expect(screen.getByLabelText(/loading/i)).toBeInTheDocument()
 
-  // If you'd like, learn about what this means and see if you can figure out
-  // how to make the warning go away (tip, you'll need to use async act)
-  // 📜 https://kentcdodds.com/blog/fix-the-not-wrapped-in-act-warning
-  await act(async () => {
-    resolve()
-    await promise
+  act(() => {
+    setReturnValue([fakePosition])
   })
 
   expect(screen.queryByLabelText(/loading/i)).not.toBeInTheDocument()
