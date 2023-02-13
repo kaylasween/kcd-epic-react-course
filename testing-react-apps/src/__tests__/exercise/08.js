@@ -21,4 +21,34 @@ test('exposes the count and increment/decrement functions', async () => {
   expect(result.count).toBe(0)
 })
 
-/* eslint no-unused-vars:0 */
+test('allows customization of initial count', async () => {
+  let result
+  function TestComponent() {
+    result = useCounter({initialCount: 5})
+    return null
+  }
+  render(<TestComponent />)
+  expect(result.count).toBe(5)
+
+  act(() => result.increment())
+  expect(result.count).toBe(6)
+
+  act(() => result.decrement())
+  expect(result.count).toBe(5)
+})
+
+test('allows customization of step count', async () => {
+  let result
+  function TestComponent() {
+    result = useCounter({step: 3})
+    return null
+  }
+  render(<TestComponent />)
+  expect(result.count).toBe(0)
+
+  act(() => result.increment())
+  expect(result.count).toBe(3)
+
+  act(() => result.decrement())
+  expect(result.count).toBe(0)
+})
