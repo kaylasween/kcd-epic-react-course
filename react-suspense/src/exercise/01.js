@@ -4,19 +4,44 @@
 import * as React from 'react'
 import {PokemonDataView, PokemonErrorBoundary, fetchPokemon} from '../pokemon'
 
-let pokemon
-let pokemonError
+const STATUS_STATES = {
+  pending: 'pending',
+  resolved: 'resolved',
+  rejected: 'rejected'
+}
 
-const pokemonPromise = fetchPokemon('pikachu').then(data => pokemon = data).catch(err => pokemonError = err)
+function createResource(promise) {
+  let status = STATUS_STATES.pending
+  let result = promise.then(
+    resolved => {
+      status = STATUS_STATES.resolved
+      result = resolved
+    },
+    rejected => {
+      status = STATUS_STATES.rejected
+      result = rejected
+    }
+  )
+  return {
+    read() {
+      if(status === STATUS_STATES.pending) {
+        throw result
+      }
+      if(status === STATUS_STATES.rejected) {
+        throw result
+      }
+      if(status === STATUS_STATES.resolved) {
+        return result
+      }
+      throw new Error('should not reach this')
+    }
+  }
+}
+
+const pokemonResource = createResource(fetchPokemon('pikachu'))
 
 function PokemonInfo() {
-  if(pokemonError) {
-    throw pokemonError
-  }
-
-  if(!pokemon) {
-    throw pokemonPromise
-  }
+  const pokemon = pokemonResource.read()
 
   return (
     <div>
@@ -32,11 +57,11 @@ function App() {
   return (
     <div className="pokemon-info-app">
       <div className="pokemon-info">
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <PokemonErrorBoundary>
+        <PokemonErrorBoundary>
+          <React.Suspense fallback={<div>Loading...</div>}>
             <PokemonInfo />
-          </PokemonErrorBoundary>
-        </React.Suspense>
+          </React.Suspense>
+        </PokemonErrorBoundary>
       </div>
     </div>
   )
