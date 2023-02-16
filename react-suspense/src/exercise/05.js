@@ -12,6 +12,10 @@ import {
 } from '../pokemon'
 import {createResource} from '../utils'
 
+const PokemonInfo = React.lazy(() =>
+  import('../lazy/pokemon-info-render-as-you-fetch'),
+)
+
 // ❗❗❗❗
 // 🦉 On this one, make sure that you UNCHECK the "Disable cache" checkbox
 // in your DevTools "Network Tab". We're relying on that cache for this
@@ -24,18 +28,6 @@ function preloadImage(src) {
     img.src = src
     img.onload = () => resolve(src)
   })
-}
-
-function PokemonInfo({pokemonResource}) {
-  const pokemon = pokemonResource.data.read()
-  return (
-    <div>
-      <div className="pokemon-info__img-wrapper">
-        <img src={pokemonResource.image.read()} alt={pokemon.name} />
-      </div>
-      <PokemonDataView pokemon={pokemon} />
-    </div>
-  )
 }
 
 const SUSPENSE_CONFIG = {
