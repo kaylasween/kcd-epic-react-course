@@ -50,7 +50,7 @@ function PokemonCacheProvider({children, cacheTime}) {
       cache.current[lowerCaseName] = {timestamp: new Date(), ...resource}
     }
     return resource
-  }, [])
+  }, [cacheTime])
 
   return (
     <PokemonResourceCacheContext.Provider value={getPokemonResource}>
