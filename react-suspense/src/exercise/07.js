@@ -76,15 +76,17 @@ function App() {
               <NavBar pokemonResource={pokemonResource} />
             </React.Suspense>
             <div className={cn.mainContentArea}>
-              <React.Suspense fallback={fallback}>
-                <LeftNav />
-              </React.Suspense>
-              <React.Suspense fallback={fallback}>
-                <MainContent pokemonResource={pokemonResource} />
-              </React.Suspense>
-              <React.Suspense fallback={fallback}>
-                <RightNav pokemonResource={pokemonResource} />
-              </React.Suspense>
+              <React.SuspenseList revealOrder="together">
+                <React.Suspense fallback={fallback}>
+                  <LeftNav />
+                </React.Suspense>
+                <React.Suspense fallback={fallback}>
+                  <MainContent pokemonResource={pokemonResource} />
+                </React.Suspense>
+                <React.Suspense fallback={fallback}>
+                  <RightNav pokemonResource={pokemonResource} />
+                </React.Suspense>
+              </React.SuspenseList>
             </div>
           </React.SuspenseList>
         </PokemonErrorBoundary>
