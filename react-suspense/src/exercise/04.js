@@ -39,16 +39,16 @@ function createPokemonResource(pokemonName) {
   return createResource(fetchPokemon(pokemonName))
 }
 
-function PokemonCacheProvider({children}) {
+function PokemonCacheProvider({children, cacheTime}) {
   const cache = React.useRef({})
 
   const getPokemonResource = React.useCallback((name) => {
     let lowerCaseName = name.toLowerCase()
     let resource = cache.current[lowerCaseName]
-    if(!resource) {
+    if(!resource || (new Date() - resource.timestamp) > cacheTime) {
       resource = createPokemonResource(lowerCaseName)
-      cache.current[lowerCaseName] = resource
-    } 
+      cache.current[lowerCaseName] = {timestamp: new Date(), ...resource}
+    }
     return resource
   }, [])
 
@@ -109,7 +109,7 @@ function App() {
 
 function AppWithProvider() {
   return (
-    <PokemonCacheProvider>
+    <PokemonCacheProvider cacheTime={5000}>
       <App/>
     </PokemonCacheProvider>
   )
